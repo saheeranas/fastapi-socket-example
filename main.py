@@ -18,7 +18,7 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var ws = new WebSocket("ws://fastapi-socket-example.onrender.com/ws");
+            var ws = new WebSocket("wss://fastapi-socket-example.onrender.com/ws");
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
