@@ -21,7 +21,7 @@ html = """
         <script>
             var client_id = Date.now()
             document.querySelector("#ws-id").textContent = client_id;
-            // var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+            //var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
             var ws = new WebSocket(`wss://fastapi-socket-example.onrender.com/ws/${client_id}`);
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
@@ -60,6 +60,11 @@ class ConnectionManager:
         for connection in self.active_connections:
             await connection.send_text(message) 
 
+    async def broadcast_except_to_sender(self, message: str, websocket: WebSocket):
+        for connection in self.active_connections:
+            if connection != websocket:
+                await connection.send_text(message) 
+
 
 manager = ConnectionManager()
 
@@ -76,7 +81,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         while True:
             data = await websocket.receive_text()
             await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.broadcast(f"Client #{client_id} says: {data}") 
+            # await manager.broadcast(f"Client #{client_id} says: {data}") 
+            await manager.broadcast_except_to_sender(f"Client #{client_id} says: {data}", websocket) 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         await manager.broadcast(f"Client #{client_id} left the chat")
